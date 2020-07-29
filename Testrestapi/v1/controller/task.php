@@ -29,7 +29,7 @@ catch(PDOException $ex){
 if(array_key_exists("taskid", $_GET)){
 
 
-    $tsaskid=$_GET['taskid'];
+    $taskid=$_GET['taskid'];
     if($taskid ==''|| !is_numeric($taskid)){
 
 
@@ -53,7 +53,7 @@ if(array_key_exists("taskid", $_GET)){
             $rowCount=$query->rowCount();
 
 
-            if(rowCount ===0){
+            if($rowCount ===0){
 
                 $response= new Response();
                 $response->setSuccess(false);
@@ -83,7 +83,7 @@ if(array_key_exists("taskid", $_GET)){
                 $response->setHttpStatusCode(200);
                 $response->setSuccess(true);
                 $response->toCache(true);
-                $response->setSata($returnData);
+                $response->setData($returnData);
                 $response->send();
                 exit();
 
