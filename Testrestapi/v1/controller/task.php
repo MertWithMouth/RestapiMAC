@@ -67,7 +67,7 @@ if(array_key_exists("taskid", $_GET)){
 
             while($row=$query->fetch(PDO::FETCH_ASSOC)){
 
-                $task =new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
+                $task =new Task($row['id'], $row['title'], $row['description'], $row['DATE_FORMAT(deadline, "%d/%m/%Y %H:%i")'], $row['completed']);
                 $taskArray[]=$task->returnTaskAsArray();
 
 
