@@ -19,7 +19,7 @@ catch(PDOException $ex){
     $response=new Response();
     $response->setSuccess(false);
     $response->setHttpStatusCode(500);
-    $response->addMessage("Database Connection ErroR");
+    $response->addMessage("Database Connection Error");
     $response->send();
     exit();
 
@@ -182,4 +182,104 @@ if(array_key_exists("taskid", $_GET)){
 
     }
 
+    
+
 }
+
+
+
+elseif(array_key_exists("completed", $_GET)){
+
+    $completed= $_GET['completed'];
+
+    if($completed !== 'Y' && $completed !== 'N'){
+
+        $response = new Response();
+        $response->setSuccess(false);
+        $response->setHttpStatusCode(400);
+        $response->addMessage("Completed filter must be Y or N");
+        $response->send();
+        exit();
+
+    }
+
+    if($_SERVER['REQUEST_METHOD'] ==='GET'){
+
+        try{
+
+            $query=$readDB->prepare('select id, title, description, DATE_FORMAT(deadline, "%d/%m/%Y %H:%i") as deadline, completed from tbltasks where completed= :completed');
+            $query->bindParam(':completed', $completed, PDO::PARAM_STR);
+            $query->execute();
+
+            $rowCount=$query->rowCount();
+
+            $taskArray=array();
+      
+
+            while($row = $query ->fetch(PDO::FETCH_ASSOC)){
+
+                $task =new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
+                $taskArray[]=$task->returnTaskAsArray();
+
+            }
+
+            $returnData=array();
+            $returnData['rows_returned']=$rowCount;
+            $returnData['tasks']=$taskArray;
+
+                $response= new Response();
+                $response->setSuccess(true);
+                $response->setHttpStatusCode(200);
+                $response->toCache(true);
+                $response->setData($returnData);
+                $response->send();
+                exit();
+
+
+        }
+
+        catch(TaskException $ex){
+
+        $response = new Response();
+        $response->setSuccess(false);
+        $response->setHttpStatusCode(500);
+        $response->addMessage($ex ->getMessage());
+        $response->send();
+
+
+
+        }
+
+        catch(PDOException $ex){
+            error_log("Database query error - ".$ex,0);
+            $response = new Response();
+            $response->setSuccess(false);
+            $response->setHttpStatusCode(500);
+            $response->addMessage('Failed to get task');
+            $response->send();
+    
+
+        }
+
+    }
+
+    else{
+        $response = new Response();
+        $response->setSuccess(false);
+        $response->setHttpStatusCode(405);
+        $response->addMessage("Request method is not allowed");
+        $response->send();
+
+    }
+
+        
+
+
+}
+
+
+
+    
+
+
+
