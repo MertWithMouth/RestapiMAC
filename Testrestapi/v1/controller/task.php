@@ -46,7 +46,7 @@ if(array_key_exists("taskid", $_GET)){
 
         try{
 
-            $query=$readDB->prepare('select id, title, description, DATE_FORMAT(deadline, "%d/%m/%Y %H:%i"), completed from tbltasks where id= :taskid');
+            $query=$readDB->prepare('select id, title, description, DATE_FORMAT(deadline, "%d/%m/%Y %H:%i") as deadline, completed from tbltasks where id= :taskid');
             $query->bindParam(':taskid', $taskid, PDO::PARAM_INT);
             $query->execute();
 
@@ -67,7 +67,7 @@ if(array_key_exists("taskid", $_GET)){
 
             while($row=$query->fetch(PDO::FETCH_ASSOC)){
 
-                $task =new Task($row['id'], $row['title'], $row['description'], $row['DATE_FORMAT(deadline, "%d/%m/%Y %H:%i")'], $row['completed']);
+                $task =new Task($row['id'], $row['title'], $row['description'], $row['deadline'], $row['completed']);
                 $taskArray[]=$task->returnTaskAsArray();
 
 
@@ -116,7 +116,52 @@ if(array_key_exists("taskid", $_GET)){
 
 
     }
+
+
     elseif($_SERVER['REQUEST_METHOD'] ==='DELETE'){
+
+        try{
+
+            $query = $writeDB -> prepare('delete from tbltasks where id =:taskid');
+            $query->bindParam(':taskid', $taskid, PDO::PARAM_INT);
+            $query->execute();
+
+            $rowCount= $query -> rowCount();
+
+            if($rowCount ===0){
+
+                $response= new Response();
+                $response->setSuccess(false);
+                $response->setHttpStatusCode(404);
+                $response->addMessage("Task not found!");
+                $response->send();
+                exit();
+
+            }
+
+
+                $response= new Response();
+                $response->setSuccess(true);
+                $response->setHttpStatusCode(200);
+                $response->addMessage("Task is deleted");
+                $response->send();
+                exit();
+
+
+        }
+
+        catch(PDOException $ex){
+            $response= new Response();
+            $response->setSuccess(false);
+            $response->setHttpStatusCode(500);
+            $response->addMessage("Failed to delete the task");
+            $response->send();
+            exit();
+
+
+
+
+        }
 
     }
 
