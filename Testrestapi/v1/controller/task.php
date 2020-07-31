@@ -275,9 +275,9 @@ elseif(array_key_exists("completed", $_GET)){
 
 }
 
-elseif(array_key_exists("page",$_GET)){
-
-if($_SERVER['REQUEST_METHOD'] ==='GET'){
+elseif(array_key_exists("page", $_GET)){
+    
+    if($_SERVER['REQUEST_METHOD'] ==='GET'){
 
     $page= $_GET['page']; 
 
@@ -293,9 +293,9 @@ if($_SERVER['REQUEST_METHOD'] ==='GET'){
 
         }
 
-$limitPerPage=20;
+    $limitPerPage=20;
 
-try{
+    try{
 
     $query = $readDB -> prepare('select count(id) as totalNoOfTasks from tbltasks');
     $query->execute();
@@ -321,8 +321,8 @@ try{
     }
 
     $offset = ($page ==1 ? 0 : ($limitPerPage*($page-1)));
-    $query=$readDB->prepare('select id, title, description, DATE_FORMAT(deadline, "%d/%m/%Y %H:%i") as deadline, completed from tbltasks limit :pglimit offset: offset');
-    $query ->bingParam(':pglimit', $limitPerPage, PDO::PARAM_INT);
+    $query=$readDB->prepare('select id, title, description, DATE_FORMAT(deadline, "%d/%m/%Y %H:%i") as deadline, completed from tbltasks limit :pglimit offset :offset');
+    $query->bindParam(':pglimit', $limitPerPage, PDO::PARAM_INT);
     $query->bindParam(':offset', $offset, PDO::PARAM_INT);
     $query->execute();
 
@@ -352,48 +352,47 @@ try{
     $response->send();
     exit();
 
-}
+    }
 
-catch(TaskException $ex){
+    catch(TaskException $ex){
             
     $response= new Response();
     $response->setSuccess(false);
     $response->setHttpStatusCode(500);
-     $response->addMessage($ex->getMessage());
-     $response->send();
-        exit();
-
-}
-
-
-
-catch(PDOException $ex){
-
-    error_log("Database query error - ".$ex, 0);
-    $response=new Response();
-    $response->setSuccess(false);
-    $response->setHttpStatusCode(500);
-    $response->addMessage("Failed to get Task");
+    $response->addMessage($ex->getMessage());
     $response->send();
     exit();
 
+    }
 
-}
 
 
-}
-else{
+    catch(PDOException $ex){
 
-    $response = new Response();
+        error_log("Database query error - ".$ex, 0);
+        $response=new Response();
+        $response->setSuccess(false);
+        $response->setHttpStatusCode(500);
+        $response->addMessage($ex->getMessage());
+        $response->send();
+        exit();
+
+
+    }
+
+
+    }
+    else{
+
+        $response = new Response();
         $response->setHttpStatusCode(405);
         $response->setSuccess(false);
         $response->addMessage("Request method is not allowed");
         $response->send();
 
 
+    }
 }
-}
-
 
 
 
